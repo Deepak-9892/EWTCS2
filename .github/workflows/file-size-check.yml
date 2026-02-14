@@ -1,0 +1,90 @@
+name: File Size Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-file-size:
+    runs-on: ubuntu-latest
+    name: Check File Size Limit
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for files exceeding 200 lines
+        run: |
+          echo "Checking for files exceeding 200 lines..."
+          
+          # Get list of changed files in this PR
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          # Initialize flag
+          VIOLATION_FOUND=0
+          
+          # Exclude patterns
+          EXCLUDE_PATTERNS=(
+            "package-lock.json"
+            "yarn.lock"
+            "pnpm-lock.yaml"
+            "*.md"
+            "*.json"
+            "*.svg"
+            "*.png"
+            "*.jpg"
+            "*.jpeg"
+            "*.gif"
+            ".github/*"
+          )
+          
+          # Function to check if file should be excluded
+          should_exclude() {
+            local file=$1
+            for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+              if [[ $file == $pattern ]]; then
+                return 0
+              fi
+            done
+            return 1
+          }
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+          
+          # Check each changed file
+          while IFS= read -r file; do
+            # Skip if file doesn't exist (deleted files)
+            if [ ! -f "$file" ]; then
+              continue
+            fi
+            
+            # Skip excluded files
+            if should_exclude "$file"; then
+              echo "⏭️  Skipping $file (excluded)"
+              continue
+            fi
+            
+            # Count lines
+            LINE_COUNT=$(wc -l < "$file" | tr -d ' ')
+            
+            if [ "$LINE_COUNT" -gt 200 ]; then
+              echo "❌ VIOLATION: $file has $LINE_COUNT lines (max 200)"
+              VIOLATION_FOUND=1
+            else
+              echo "✅ $file has $LINE_COUNT lines"
+            fi
+          done <<< "$CHANGED_FILES"
+          
+          echo ""
+          
+          if [ $VIOLATION_FOUND -eq 1 ]; then
+            echo "::error::One or more files exceed the 200-line limit"
+            echo "Please split large files into smaller modules."
+            exit 1
+          else
+            echo "✅ All files are within the 200-line limit"
+          fi
