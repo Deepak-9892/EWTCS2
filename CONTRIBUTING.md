@@ -25,7 +25,7 @@ This is a beginner-friendly project. Don't worry if you're new to open source â€
    ```
 3. **Add upstream** remote:
    ```bash
-   git remote add upstream https://github.com/original-org/EWTCS.git
+   git remote add upstream https://github.com/somuyakhandelwal/EWTCS.git
    ```
 
 ### Step 3: Create a Branch
