@@ -1,6 +1,6 @@
 // Bed Dashboard Client Wrapper
 // Epic 1: Nurse Desk Bed Dashboard
-// This component wraps the BedGrid to handle client-side interactions
+// US-1.2: Real-time updates with intelligent polling
 
 'use client'
 
@@ -36,15 +36,9 @@ export function BedDashboardClient({ initialData }: BedDashboardClientProps) {
   
   const updateTimeoutTimer = useRef<NodeJS.Timeout | null>(null)
 
-  const stageById = useMemo(() => {
-    const map = new Map<string, Stage>()
-    data.stages.forEach((stage) => map.set(stage.id, stage))
-    return map
-  }, [data.stages])
-
-  const handleRefresh = useCallback(() => {
-    router.refresh()
-  }, [router])
+  const handleRefresh = useCallback(async () => {
+    await refresh()
+  }, [refresh])
 
   const handleBedClick = useCallback((bed: BedWithElapsedTime) => {
     // TODO US-1.2: Open bed details modal or navigate to bed page
@@ -162,16 +156,26 @@ export function BedDashboardClient({ initialData }: BedDashboardClientProps) {
   )
 
   return (
-    <BedGrid
-      data={data}
-      onRefresh={handleRefresh}
-      onBedClick={handleBedClick}
-      onStageSelect={handleStageSelect}
-      updatingBedId={updatingBedId}
-      updatingStageId={updatingStageId}
-      lastUpdatedBedId={lastUpdatedBedId}
-      lastUpdatedStageId={lastUpdatedStageId}
-      errorByBedId={errorByBedId}
-    />
+    <div className="space-y-4">
+      {/* Connection Status Indicator */}
+      <div className="flex justify-end">
+        <ConnectionStatus status={connectionStatus} onReconnect={reconnect} />
+      </div>
+
+      {/* Bed Grid with real-time data */}
+      <BedGrid
+        data={data}
+        onRefresh={handleRefresh}
+        onBedClick={handleBedClick}
+        onStageSelect={handleStageSelect}
+        updatingBedId={updatingBedId}
+        updatingStageId={updatingStageId}
+        lastUpdatedBedId={lastUpdatedBedId}
+        lastUpdatedStageId={lastUpdatedStageId}
+        errorByBedId={errorByBedId}
+        isRefreshing={isLoading}
+      />
+    </div>
   )
 }
+

@@ -22,6 +22,7 @@ interface BedGridProps {
   lastUpdatedBedId?: string | null
   lastUpdatedStageId?: string | null
   errorByBedId?: Record<string, string>
+  isRefreshing?: boolean
 }
 
 export function BedGrid({
@@ -34,9 +35,9 @@ export function BedGrid({
   lastUpdatedBedId = null,
   lastUpdatedStageId = null,
   errorByBedId = {},
+  isRefreshing = false,
 }: BedGridProps) {
   const [showDelayedOnly, setShowDelayedOnly] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const [menuState, setMenuState] = useState<{
     bedId: string
     position: { x: number; y: number }
@@ -52,10 +53,8 @@ export function BedGrid({
   // Memoize statistics calculation
   const stats = useMemo(() => getBedStatistics(data.beds), [data.beds])
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true)
+  const handleRefresh = useCallback(() => {
     onRefresh?.()
-    setTimeout(() => setIsRefreshing(false), 500)
   }, [onRefresh])
   
   const toggleFilter = useCallback(() => {
