@@ -24,6 +24,8 @@ interface BedGridProps {
   lastUpdatedStageId?: string | null
   errorByBedId?: Record<string, string>
   isRefreshing?: boolean
+  undoState?: { bedId: string; prevStageId: string; timer: number } | null
+  onUndo?: () => void
 }
 
 export function BedGrid({
@@ -39,6 +41,8 @@ export function BedGrid({
   lastUpdatedStageId = null,
   errorByBedId = {},
   isRefreshing = false,
+  undoState,
+  onUndo,
 }: BedGridProps) {
   const [showDelayedOnly, setShowDelayedOnly] = useState(false)
   const [menuState, setMenuState] = useState<{
@@ -117,10 +121,8 @@ export function BedGrid({
   }, [])
 
   const activeBed = useMemo(() => {
-    if (!menuState) {
-      return null
-    }
-    return data.beds.find((bed) => bed.id === menuState.bedId) ?? null
+    if (!menuState) return null
+    return data.beds.find(bed => bed.id === menuState.bedId) ?? null
   }, [data.beds, menuState])
 
   return (
