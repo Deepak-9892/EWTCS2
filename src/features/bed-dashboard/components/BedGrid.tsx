@@ -127,6 +127,7 @@ export function BedGrid({
 
   return (
     <div className="space-y-6">
+      {/* Header with filters and actions */}
       <BedGridHeader
         showDelayedOnly={showDelayedOnly}
         delayedCount={stats.delayed}
