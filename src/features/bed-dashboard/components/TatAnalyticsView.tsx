@@ -17,9 +17,10 @@ import { logger } from '@/shared/config/logger'
 
 interface TatAnalyticsViewProps {
   className?: string
+  readOnly?: boolean
 }
 
-export function TatAnalyticsView({ className }: TatAnalyticsViewProps) {
+export function TatAnalyticsView({ className, readOnly = false }: TatAnalyticsViewProps) {
   const [fullCycleSummary, setFullCycleSummary] = useState<FullCycleTatSummary | null>(null)
   const [fullCycleRecords, setFullCycleRecords] = useState<FullCycleTatRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,7 +64,7 @@ export function TatAnalyticsView({ className }: TatAnalyticsViewProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-red-600">{error}</p>
-          <Button variant="outline" onClick={loadData} className="mt-4">Retry</Button>
+          <Button variant="outline" onClick={loadData} className="mt-4" disabled={readOnly}>Retry</Button>
         </CardContent>
       </Card>
     )
@@ -81,7 +82,7 @@ export function TatAnalyticsView({ className }: TatAnalyticsViewProps) {
         <div className="flex items-center gap-2">
           {[24, 48, 168].map(h => (
             <Button key={h} size="sm" variant={hoursBack === h ? 'default' : 'outline'}
-              onClick={() => setHoursBack(h)}>
+              onClick={() => setHoursBack(h)} disabled={readOnly}>
               {h === 168 ? '7d' : `${h}h`}
             </Button>
           ))}

@@ -64,21 +64,15 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    if (pathname.startsWith('/analytics')) {
-        if (!session || (session.role !== 'supervisor' && session.role !== 'admin')) {
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
-    }
-
     if (pathname.startsWith('/dashboard')) {
         if (!session || session.role !== 'nurse') {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
-    // Analytics: supervisor and admin only
+    // Analytics: supervisor, admin, and auditor
     if (pathname.startsWith('/analytics')) {
-        if (!session || (session.role !== 'supervisor' && session.role !== 'admin')) {
+        if (!session || (session.role !== 'supervisor' && session.role !== 'admin' && session.role !== 'auditor')) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
@@ -88,6 +82,7 @@ export async function middleware(request: NextRequest) {
         if (session) {
             if (session.role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
             if (session.role === 'supervisor') return NextResponse.redirect(new URL('/supervisor', request.url))
+            if (session.role === 'auditor') return NextResponse.redirect(new URL('/analytics', request.url))
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
     }

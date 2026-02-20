@@ -84,4 +84,4 @@ export default function UserManagementTable({ users, wards = [] }: UserManagemen
             )}
         </>
     )
-}
+}

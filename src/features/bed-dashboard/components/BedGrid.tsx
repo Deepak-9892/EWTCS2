@@ -28,7 +28,7 @@ interface BedGridProps {
   lastUpdatedStageId?: string | null
   errorByBedId?: Record<string, string>
   isRefreshing?: boolean
-  undoState?: { bedId: string; prevStageId: string; timer: number } | null
+  undoState?: { bedId: string; timer: number } | null
   onUndo?: () => void
 }
 
