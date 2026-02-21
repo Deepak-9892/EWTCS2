@@ -165,7 +165,6 @@ export async function login(prevState: unknown, formData: FormData) {
             kioskOpts = { isKiosk: true, kioskIp: boundIp, kioskSessionId }
         }
         await createSession(user.id, user.username, user.role, kioskOpts)
-
         await logAudit({
             actionType: 'LOGIN',
             entityType: 'user',
@@ -178,7 +177,6 @@ export async function login(prevState: unknown, formData: FormData) {
             },
             ipAddress,
         })
-
         // Redirect based on role
         if (user.role === 'admin') {
             redirect('/admin')
