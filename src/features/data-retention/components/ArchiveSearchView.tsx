@@ -12,12 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/lib/utils'
 import { searchArchive } from '../actions/archive-search-actions'
-import { ArchiveAdmissionsTable } from './ArchiveAdmissionsTable'
-import { ArchiveAuditLogsTable } from './ArchiveAuditLogsTable'
+import { AdmissionsTable, AuditLogsTable } from './ArchiveResultTables'
 import type { ArchivedAdmission, ArchivedAuditLog } from '../lib/data-retention-types'
 
-export type TableChoice = 'patient_admissions' | 'audit_logs'
 
+export type TableChoice = 'patient_admissions' | 'audit_logs'
 
 // ── Main component ─────────────────────────────────────────────────────────
 
@@ -130,10 +129,10 @@ export function ArchiveSearchView({ className }: ArchiveSearchViewProps) {
                 : `${results.length.toLocaleString()} record${results.length === 1 ? '' : 's'} found`}
             </p>
             {results.length > 0 && resultTable === 'patient_admissions' && (
-              <ArchiveAdmissionsTable rows={results as ArchivedAdmission[]} />
+              <AdmissionsTable rows={results as ArchivedAdmission[]} />
             )}
             {results.length > 0 && resultTable === 'audit_logs' && (
-              <ArchiveAuditLogsTable rows={results as ArchivedAuditLog[]} />
+              <AuditLogsTable rows={results as ArchivedAuditLog[]} />
             )}
           </div>
         )}

@@ -46,24 +46,24 @@ export const BedCard = memo(function BedCard({
   const stageColor = bed.currentStage?.colorCode || 'gray'
   const colorClasses = bed.isDelayed ? getDelayColorClasses(true) : getStageColorClasses(stageColor)
   const elapsedTime = useElapsedTime(bed.patientStartTime)
-  const { isOccupied, isDelayed, isEscalated, isDispositionBottleneck: isBottleneck } = bed
+  const { isOccupied, isDelayed, isDispositionBottleneck: isBottleneck, isEscalated } = bed
   const isCleaning = isCleaningStage(bed.currentStage?.name)
   const isTemporary = bed.isTemporary
   const isVirtual = bed.isVirtual
 
   // US-4.3: Acknowledge — pauses animation for 30s, resumes if still delayed
   const [acknowledged, setAcknowledged] = useState(false)
-  useEffect(() => { if (!isDelayed && !isEscalated) setAcknowledged(false) }, [isDelayed, isEscalated])
+  useEffect(() => { if (!isDelayed) setAcknowledged(false) }, [isDelayed])
   useEffect(() => {
     if (!acknowledged) return
-    const t = setTimeout(() => { if (isDelayed || isEscalated) setAcknowledged(false) }, ACKNOWLEDGE_PAUSE_MS)
+    const t = setTimeout(() => { if (isDelayed) setAcknowledged(false) }, ACKNOWLEDGE_PAUSE_MS)
     return () => clearTimeout(t)
-  }, [acknowledged, isDelayed, isEscalated])
+  }, [acknowledged, isDelayed])
 
   const handleClick = useCallback(() => {
-    if ((isDelayed || isEscalated) && !acknowledged) setAcknowledged(true)
+    if (isDelayed && !acknowledged) setAcknowledged(true)
     onClick?.(bed)
-  }, [isDelayed, isEscalated, acknowledged, onClick, bed])
+  }, [isDelayed, acknowledged, onClick, bed])
 
   const showPulse = animationEnabled && !acknowledged
   return (
@@ -78,11 +78,10 @@ export const BedCard = memo(function BedCard({
         'border-2',
         isVirtual && 'ring-2 ring-purple-500 border-purple-700',
         isTemporary && !isVirtual && 'ring-2 ring-orange-500 border-orange-700',
-        isDelayed && !isEscalated && 'ring-2 ring-red-500',
-        isEscalated && 'ring-2 ring-fuchsia-500',
-        (isDelayed || isEscalated) && showPulse && 'motion-safe:animate-pulse',
-        isBottleneck && !isDelayed && !isEscalated && 'ring-2 ring-amber-500',
-        isBottleneck && !isDelayed && !isEscalated && showPulse && 'motion-safe:animate-pulse',
+        isDelayed && 'ring-2 ring-red-500',
+        isDelayed && showPulse && 'motion-safe:animate-pulse',
+        isBottleneck && !isDelayed && 'ring-2 ring-amber-500',
+        isBottleneck && !isDelayed && showPulse && 'motion-safe:animate-pulse',
       )}
       onClick={handleClick}
       onKeyDown={(e) => {

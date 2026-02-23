@@ -106,7 +106,6 @@ export function BedGrid({
         available={stats.available}
         delayed={stats.delayed}
         bottleneckCount={data.bottleneckCount}
-        escalationCount={data.escalationCount}
         cleaningCount={cleaningCount}
         avgTatMs={tatSummary?.averageTatMs}
       />

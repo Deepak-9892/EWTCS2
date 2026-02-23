@@ -1,9 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Upload, AlertCircle, CheckCircle2, FileUp, Loader2, X } from 'lucide-react'
+import { Upload, AlertCircle, FileUp, Loader2, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useImportLogic } from '../hooks/useImportLogic'
+import { ImportResultDisplay } from './ImportResultDisplay'
 
 export function ImportDialog() {
     const [isOpen, setIsOpen] = React.useState(false)
@@ -55,24 +56,7 @@ export function ImportDialog() {
                         </div>
                     )}
 
-                    {result && (
-                        <div className="space-y-4">
-                            <div className={`p-4 rounded-md flex gap-3 ${result.failureCount > 0 ? "bg-amber-900/20 border-amber-900/50 text-amber-400" : "bg-emerald-900/20 border-emerald-900/50 text-emerald-400"}`}>
-                                {result.failureCount > 0 ? <AlertCircle className="h-5 w-5 shrink-0" /> : <CheckCircle2 className="h-5 w-5 shrink-0" />}
-                                <div className="text-sm"><h4 className="font-bold">Import Completed</h4><p>Success: {result.successCount}, Failed: {result.failureCount}</p></div>
-                            </div>
-                            {result.errors.length > 0 && (
-                                <div className="border border-zinc-800 rounded-md bg-black/40 overflow-hidden">
-                                    <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-900/50 text-xs font-semibold text-zinc-400">ERROR LOG</div>
-                                    <div className="p-4 max-h-[150px] overflow-y-auto font-mono text-xs space-y-1">
-                                        {result.errors.map((err, idx) => (
-                                            <div key={idx} className="text-red-400/90"><span className="text-zinc-600">Row {err.row}:</span> {err.error}</div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    {result && <ImportResultDisplay result={result} />}
                 </div>
 
                 <div className="p-6 border-t border-zinc-800 flex justify-end gap-3">

@@ -11,18 +11,14 @@ interface BedStatusLegendProps {
   escalationThresholdMs?: number
 }
 
-export const BedStatusLegend = memo(function BedStatusLegend({
-  stages,
-  delayThresholdMs,
-  escalationThresholdMs
-}: BedStatusLegendProps) {
+export const BedStatusLegend = memo(function BedStatusLegend({ stages, delayThresholdMs, escalationThresholdMs }: BedStatusLegendProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const thresholdLabel = delayThresholdMs
     ? `${Math.round(delayThresholdMs / 3600000)} hours`
     : '3 hours'
   const escalationThresholdLabel = escalationThresholdMs
     ? `${Math.round(escalationThresholdMs / 3600000)} hours`
-    : '4 hours'
+    : '6 hours'
   return (
     <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 overflow-hidden">
       <button
@@ -73,6 +69,7 @@ export const BedStatusLegend = memo(function BedStatusLegend({
 
           {/* Alert indicators */}
           <div className="mt-3 pt-3 border-t border-zinc-800 flex flex-wrap gap-4" role="list">
+            {/* US-15.3: Critical Escalation indicator */}
             <div className="flex items-center gap-2" role="listitem" tabIndex={0} aria-label={`Critical Escalation: more than ${escalationThresholdLabel}`}>
               <div className="w-5 h-5 rounded border-2 border-fuchsia-700 bg-fuchsia-900/50 flex items-center justify-center motion-safe:animate-pulse" aria-hidden="true">
                 <AlertTriangle className="h-3.5 w-3.5 text-fuchsia-400" />
@@ -81,6 +78,7 @@ export const BedStatusLegend = memo(function BedStatusLegend({
                 Critical Escalation (&gt;{escalationThresholdLabel})
               </span>
             </div>
+            {/* Delay indicator */}
             <div className="flex items-center gap-2" role="listitem" tabIndex={0} aria-label={`Delayed: more than ${thresholdLabel}`}>
               <div className="w-5 h-5 rounded border-2 border-red-700 bg-red-900/50 flex items-center justify-center motion-safe:animate-pulse" aria-hidden="true">
                 <AlertCircle className="h-3.5 w-3.5 text-red-400" />
@@ -104,5 +102,3 @@ export const BedStatusLegend = memo(function BedStatusLegend({
     </div>
   )
 })
-
-

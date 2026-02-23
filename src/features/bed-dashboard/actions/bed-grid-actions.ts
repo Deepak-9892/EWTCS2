@@ -29,7 +29,7 @@ export async function getBedGridData(): Promise<{
 
     const [delayThresholdMs, escalationThresholdMs] = await Promise.all([
       getGlobalThresholdMs(),
-      getGlobalEscalationThresholdMs()
+      getGlobalEscalationThresholdMs(),
     ])
 
     // Fetch beds and stages in parallel
@@ -54,8 +54,8 @@ export async function getBedGridData(): Promise<{
       bedCount: beds.length,
       stageCount: stages.length,
       delayedBeds: beds.filter(b => b.isDelayed).length,
+      escalatedBeds: escalationCount,
       bottleneckBeds: bottleneckCount,
-      escalationCount,
     })
 
     // EPIC 13: log latency sample — WARN is emitted if > 2 s SLA.
@@ -85,7 +85,7 @@ export async function getDelayedBeds(): Promise<{
   try {
     const [delayThresholdMs, escalationThresholdMs] = await Promise.all([
       getGlobalThresholdMs(),
-      getGlobalEscalationThresholdMs()
+      getGlobalEscalationThresholdMs(),
     ])
     const allBeds = await getBedsWithElapsedTime(delayThresholdMs, escalationThresholdMs)
     const delayedBeds = allBeds.filter(bed => bed.isDelayed)
