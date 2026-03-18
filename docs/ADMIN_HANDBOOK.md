@@ -163,6 +163,11 @@ npm run audit:verify
 Dev runtime note:
 - `npm run dev` now clears `.next` before startup to reduce stale chunk load errors during local development.
 
+### US-22.1 Operational Notes
+- New migrations: `047_enforce_symptom_40_char_limit.sql`, `1774000000000_enforce_symptom_40_char_limit_after_triage.sql`
+- Triage complaint field (`beds.key_symptom`) is now strictly limited to 40 characters.
+- Deployment action: run `npm run db:migrate` before application startup after pulling this release.
+
 ### Validation, Tests, and Ops
 ```bash
 npm run validate:env
