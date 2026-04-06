@@ -1,7 +1,7 @@
 # EWTCS Project Status
 
-**Emergency Ward Bed Status Monitoring & AI Daily Report System**  
-**Last Updated:** April 6, 2026  
+**Emergency Ward Bed Status Monitoring & AI Daily Report System**
+**Last Updated:** April 6, 2026
 **Version:** 2.0 (Phase 1 + Phase 2 + Phase 3 Core + EPIC 20 + EPIC 23 + EPIC 24)
 
 ---
