@@ -9,7 +9,7 @@ function durationFrom(startedAt: Date): number {
   return Date.now() - new Date(startedAt).getTime()
 }
 
-async function writeTriageLog(
+export async function writeTriageLog(
   client: PoolClient,
   bed: LockedTriageBed,
   toState: TriageState,
@@ -26,7 +26,7 @@ async function writeTriageLog(
   )
 }
 
-async function writeAudit(
+export async function writeAudit(
   client: PoolClient,
   bed: LockedTriageBed,
   toState: TriageState,
@@ -50,7 +50,7 @@ async function writeAudit(
   )
 }
 
-async function setTriageState(client: PoolClient, bedId: string, toState: TriageState) {
+export async function setTriageState(client: PoolClient, bedId: string, toState: TriageState) {
   await client.query(
     `UPDATE triage_bed_statuses
      SET state = $1, last_state_change = NOW(), updated_at = NOW()
@@ -83,7 +83,7 @@ async function savePatient(client: PoolClient, bedId: string, patient: TriagePat
   )
 }
 
-async function clearPatient(client: PoolClient, bedId: string) {
+export async function clearPatient(client: PoolClient, bedId: string) {
   await client.query(
     `UPDATE beds
      SET patient_uhid = NULL, patient_ipd_id = NULL, patient_name = NULL,
@@ -95,6 +95,7 @@ async function clearPatient(client: PoolClient, bedId: string) {
     [bedId]
   )
 }
+
 
 export async function assignPatientInDB(bedId: string, patient: TriagePatientDetails, userId: string) {
   const metadata = { source: 'triage', assignment: true, triageCategory: patient.triageCategory }

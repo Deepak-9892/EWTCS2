@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { TriageDashboardClient } from '../components/TriageDashboardClient'
+import { completeTriageDecision } from '../actions'
 import type { TriageBed, TriageState } from '../types'
 
 vi.mock('next/navigation', () => ({
@@ -9,6 +11,8 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('../actions', () => ({
   assignTriagePatient: vi.fn(),
+  completeTriageDecision: vi.fn(),
+  fetchAvailableErBeds: vi.fn().mockResolvedValue({ success: true, data: { beds: [] } }),
   transitionTriageBed: vi.fn(),
   updateTriagePatientDetails: vi.fn(),
 }))
@@ -63,7 +67,22 @@ describe('TriageDashboardClient', () => {
 
     expect(screen.getByText('Assign Patient')).toBeInTheDocument()
     expect(screen.getByText('Mark Decision Made')).toBeInTheDocument()
-    expect(screen.getByText('Move to Cleaning')).toBeInTheDocument()
+    expect(screen.getByText('Record Decision Outcome')).toBeInTheDocument()
     expect(screen.getByText('Cleaning Complete')).toBeInTheDocument()
+  })
+
+  it('shows decision field validation errors in the modal', async () => {
+    vi.mocked(completeTriageDecision).mockResolvedValueOnce({
+      success: false,
+      errors: { erBedId: ['Select an ER bed for transfer.'] },
+    })
+
+    render(<TriageDashboardClient initialBeds={[makeBed(1, 'decision_made')]} />)
+
+    const user = userEvent.setup()
+    await user.click(screen.getByText('Record Decision Outcome'))
+    await user.click(screen.getByText('Record Outcome'))
+
+    expect(await screen.findByText('Select an ER bed for transfer.')).toBeInTheDocument()
   })
 })
