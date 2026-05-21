@@ -39,7 +39,11 @@ describe('aggregateDailyStats', () => {
             { totalPatients: '15', totalBedsUsed: '18', totalStageUpdates: '72' },
             { avgStageTimeMs: '300000' },   // 5 min
             { delayCount: '4' },
-            { avgTatMs: '1800000' },        // 30 min
+            {
+                avgTatMs: '1800000',
+                avgErTatMs: '2100000',
+                avgTriageTatMs: '900000',
+            },                              // 30 min combined
             { stageName: 'Discharge' }
         )
 
@@ -53,6 +57,8 @@ describe('aggregateDailyStats', () => {
         expect(result.delayCount).toBe(4)
         expect(result.avgTatMinutes).toBe(30)
         expect(result.metadata.mostDelayedStage).toBe('Discharge')
+        expect(result.metadata.avgErTatMinutes).toBe(35)
+        expect(result.metadata.avgTriageTatMinutes).toBe(15)
     })
 
     it('returns 0 for avgStageTimeMinutes when no stage-time rows', async () => {

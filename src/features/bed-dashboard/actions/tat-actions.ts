@@ -13,6 +13,18 @@ import { updateBedStageInDB } from '../lib/bed-mutations'
 import { getTATSummary, getTATRecords } from '../lib/tat-queries'
 import { getTatSummary, getCompletedTatRecords } from '../lib/tat-cleaning-queries'
 import type { TATSummary, TATRecord } from '../lib/tat-queries'
+import {
+  getErTatSummary,
+  getErTatRecords,
+  getErCleaningTatSummary,
+  getErCleaningTatRecords,
+  getTriageTatSummary,
+  getTriageTatRecords,
+  getTriageCleaningTatSummary,
+  getTriageCleaningTatRecords,
+  type DurationMetricSummary,
+  type WorkflowTatRecord,
+} from '../lib/stage-analytics'
 import type { TatRecord, TatSummary } from '../types/bed'
 import { getAllStages } from '../lib/queries'
 import { resolveActiveShiftIdCached } from '@/shared/lib/shift-helpers'
@@ -28,6 +40,18 @@ export interface FetchTATSummaryResult {
 export interface FetchTATRecordsResult {
   success: boolean
   data?: TATRecord[]
+  error?: string
+}
+
+export interface FetchWorkflowTatSummaryResult {
+  success: boolean
+  data?: DurationMetricSummary
+  error?: string
+}
+
+export interface FetchWorkflowTatRecordsResult {
+  success: boolean
+  data?: WorkflowTatRecord[]
   error?: string
 }
 
@@ -75,6 +99,134 @@ export async function fetchTATRecords(options?: {
     const message =
       error instanceof Error ? error.message : 'Failed to fetch TAT records'
     logger.error('fetchTATRecords failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchErTatSummary(options?: {
+  startDate?: Date
+  endDate?: Date
+}): Promise<FetchWorkflowTatSummaryResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const summary = await getErTatSummary(options?.startDate, options?.endDate)
+    return { success: true, data: summary }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch ER TAT summary'
+    logger.error('fetchErTatSummary failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchErTatRecords(options?: {
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+}): Promise<FetchWorkflowTatRecordsResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const records = await getErTatRecords(options?.startDate, options?.endDate)
+    return { success: true, data: options?.limit ? records.slice(0, options.limit) : records }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch ER TAT records'
+    logger.error('fetchErTatRecords failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchErCleaningTatSummary(options?: {
+  startDate?: Date
+  endDate?: Date
+}): Promise<FetchWorkflowTatSummaryResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const summary = await getErCleaningTatSummary(options?.startDate, options?.endDate)
+    return { success: true, data: summary }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch ER cleaning TAT summary'
+    logger.error('fetchErCleaningTatSummary failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchErCleaningTatRecords(options?: {
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+}): Promise<FetchWorkflowTatRecordsResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const records = await getErCleaningTatRecords(options?.startDate, options?.endDate)
+    return { success: true, data: options?.limit ? records.slice(0, options.limit) : records }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch ER cleaning TAT records'
+    logger.error('fetchErCleaningTatRecords failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchTriageTatSummary(options?: {
+  startDate?: Date
+  endDate?: Date
+}): Promise<FetchWorkflowTatSummaryResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const summary = await getTriageTatSummary(options?.startDate, options?.endDate)
+    return { success: true, data: summary }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch triage TAT summary'
+    logger.error('fetchTriageTatSummary failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchTriageTatRecords(options?: {
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+}): Promise<FetchWorkflowTatRecordsResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const records = await getTriageTatRecords(options?.startDate, options?.endDate)
+    return { success: true, data: options?.limit ? records.slice(0, options.limit) : records }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch triage TAT records'
+    logger.error('fetchTriageTatRecords failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchTriageCleaningTatSummary(options?: {
+  startDate?: Date
+  endDate?: Date
+}): Promise<FetchWorkflowTatSummaryResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const summary = await getTriageCleaningTatSummary(options?.startDate, options?.endDate)
+    return { success: true, data: summary }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch triage cleaning TAT summary'
+    logger.error('fetchTriageCleaningTatSummary failed', error as Error)
+    return { success: false, error: message }
+  }
+}
+
+export async function fetchTriageCleaningTatRecords(options?: {
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+}): Promise<FetchWorkflowTatRecordsResult> {
+  try {
+    await requireRole(['supervisor', 'admin', 'auditor'])
+    const records = await getTriageCleaningTatRecords(options?.startDate, options?.endDate)
+    return { success: true, data: options?.limit ? records.slice(0, options.limit) : records }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch triage cleaning TAT records'
+    logger.error('fetchTriageCleaningTatRecords failed', error as Error)
     return { success: false, error: message }
   }
 }

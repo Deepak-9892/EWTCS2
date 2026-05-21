@@ -62,16 +62,81 @@ async function getDelayCount(dayStart: Date, dayEnd: Date): Promise<number> {
     return parseInt(result.rows[0]?.delayCount ?? '0', 10)
 }
 
-async function getAvgTat(dayStart: Date, dayEnd: Date): Promise<number> {
+async function getAvgTat(
+    dayStart: Date,
+    dayEnd: Date
+): Promise<{ avgTatMs: number; avgErTatMs: number | null; avgTriageTatMs: number | null }> {
     const sql = `
-    SELECT AVG(pa.tat_from_previous_discharge_ms) AS "avgTatMs"
-    FROM patient_admissions pa
-    WHERE pa.admitted_at >= $1 AND pa.admitted_at <= $2
-      AND pa.tat_from_previous_discharge_ms IS NOT NULL
+    WITH er_cycles AS (
+      SELECT pa.total_duration_ms AS duration_ms
+      FROM patient_admissions pa
+      JOIN beds b ON b.id = pa.bed_id
+      JOIN wards w ON w.id = b.ward_id AND w.code = 'ER'
+      WHERE pa.discharged_at >= $1
+        AND pa.discharged_at <= $2
+        AND pa.total_duration_ms IS NOT NULL
+    ),
+    triage_start_events AS (
+      SELECT
+        tsl.bed_id,
+        tsl.transition_time AS started_at
+      FROM triage_state_logs tsl
+      JOIN beds b ON b.id = tsl.bed_id
+      JOIN wards w ON w.id = b.ward_id AND w.code = 'TRIAGE'
+      WHERE tsl.to_state = 'initial_treatment'
+    ),
+    triage_cleaning_events AS (
+      SELECT
+        tsl.bed_id,
+        tsl.transition_time AS cleaning_at,
+        LAG(tsl.transition_time) OVER (
+          PARTITION BY tsl.bed_id
+          ORDER BY tsl.transition_time ASC
+        ) AS previous_cleaning_at
+      FROM triage_state_logs tsl
+      JOIN beds b ON b.id = tsl.bed_id
+      JOIN wards w ON w.id = b.ward_id AND w.code = 'TRIAGE'
+      WHERE tsl.to_state = 'cleaning'
+        AND tsl.transition_time >= $1
+        AND tsl.transition_time <= $2
+    ),
+    triage_cycles AS (
+      SELECT EXTRACT(EPOCH FROM (ce.cleaning_at - se.started_at)) * 1000 AS duration_ms
+      FROM triage_cleaning_events ce
+      JOIN LATERAL (
+        SELECT s.started_at
+        FROM triage_start_events s
+        WHERE s.bed_id = ce.bed_id
+          AND s.started_at < ce.cleaning_at
+          AND (
+            ce.previous_cleaning_at IS NULL
+            OR s.started_at > ce.previous_cleaning_at
+          )
+        ORDER BY s.started_at DESC
+        LIMIT 1
+      ) se ON true
+    ),
+    workflow_cycles AS (
+      SELECT duration_ms, 'er'::text AS workflow FROM er_cycles
+      UNION ALL
+      SELECT duration_ms, 'triage'::text AS workflow FROM triage_cycles
+    )
+    SELECT
+      AVG(duration_ms) AS "avgTatMs",
+      AVG(duration_ms) FILTER (WHERE workflow = 'er') AS "avgErTatMs",
+      AVG(duration_ms) FILTER (WHERE workflow = 'triage') AS "avgTriageTatMs"
+    FROM workflow_cycles
   `
     const result = await query<RawAvgTat>(sql, [dayStart, dayEnd])
-    const raw = result.rows[0]?.avgTatMs
-    return raw !== null && raw !== undefined ? parseFloat(raw) : 0
+    const row = result.rows[0]
+    return {
+        avgTatMs: row?.avgTatMs !== null && row?.avgTatMs !== undefined ? parseFloat(row.avgTatMs) : 0,
+        avgErTatMs: row?.avgErTatMs !== null && row?.avgErTatMs !== undefined ? parseFloat(row.avgErTatMs) : null,
+        avgTriageTatMs:
+            row?.avgTriageTatMs !== null && row?.avgTriageTatMs !== undefined
+                ? parseFloat(row.avgTriageTatMs)
+                : null,
+    }
 }
 
 async function getMostDelayedStage(dayStart: Date, dayEnd: Date): Promise<string | undefined> {
@@ -153,7 +218,7 @@ export async function aggregateDailyStats(dateStr: string): Promise<DailySummary
     const { dayStart, dayEnd } = getDayBounds(dateStr)
     logger.info(`[ai-summary] Aggregating stats for ${dateStr}`)
 
-    const [patientStats, avgStageTimeMs, delayCount, avgTatMs, mostDelayedStage] =
+    const [patientStats, avgStageTimeMs, delayCount, avgTat, mostDelayedStage] =
         await Promise.all([
             getPatientStats(dayStart, dayEnd),
             getAvgStageTime(dayStart, dayEnd),
@@ -164,13 +229,17 @@ export async function aggregateDailyStats(dateStr: string): Promise<DailySummary
 
     const metadata: DailySummaryMetadata = {}
     if (mostDelayedStage) metadata.mostDelayedStage = mostDelayedStage
+    if (avgTat.avgErTatMs !== null) metadata.avgErTatMinutes = msToMinutes(avgTat.avgErTatMs)
+    if (avgTat.avgTriageTatMs !== null) {
+        metadata.avgTriageTatMinutes = msToMinutes(avgTat.avgTriageTatMs)
+    }
 
     return {
         summaryDate: dateStr,
         totalPatients: patientStats.totalPatients,
         avgStageTimeMinutes: msToMinutes(avgStageTimeMs),
         delayCount,
-        avgTatMinutes: msToMinutes(avgTatMs),
+        avgTatMinutes: msToMinutes(avgTat.avgTatMs),
         totalBedsUsed: patientStats.totalBedsUsed,
         totalStageUpdates: patientStats.totalStageUpdates,
         metadata,

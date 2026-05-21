@@ -51,7 +51,7 @@ export async function createStage(input: CreateStageInput) {
   });
 
   revalidatePath('/admin/stages');
-  revalidateTag(SETTINGS_CACHE_TAG);
+  revalidateTag(SETTINGS_CACHE_TAG, 'max');
 }
 
 // Update an existing stage
@@ -117,7 +117,7 @@ export async function updateStage(input: UpdateStageInput) {
   revalidatePath('/admin/stages');
   revalidatePath('/dashboard');
   revalidatePath('/triage');
-  revalidateTag(SETTINGS_CACHE_TAG);
+  revalidateTag(SETTINGS_CACHE_TAG, 'max');
 }
 
 // Delete a stage (only non-default stages can be deleted)
@@ -156,7 +156,7 @@ export async function deleteStage(id: string) {
   });
 
   revalidatePath('/admin/stages');
-  revalidateTag(SETTINGS_CACHE_TAG);
+  revalidateTag(SETTINGS_CACHE_TAG, 'max');
 }
 
 // Reorder stages
@@ -198,5 +198,5 @@ export async function reorderStages(orderedIds: string[]) {
   });
 
   revalidatePath('/admin/stages');
-  revalidateTag(SETTINGS_CACHE_TAG);
+  revalidateTag(SETTINGS_CACHE_TAG, 'max');
 }
